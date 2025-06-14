@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pengguna {
+  id         String   @id @default(uuid())
+  nama       String
+  email      String   @unique
+  sandi      String
+  peran      Peran    @default(PENGGUNA)
+  dibuatPada DateTime @default(now())
+  diperbarui DateTime @updatedAt
+
+  Pesanan Pesanan[]
+}
+
+enum Peran {
+  ADMIN
+  PENGGUNA
+}
+
+model Kategori {
+  id         String   @id @default(cuid())
+  nama       String
+  produk     Produk[]
+  dibuatPada DateTime @default(now())
+  diperbarui DateTime @updatedAt
+}
+
+model Produk {
+  id         String   @id @default(cuid())
+  nama       String
+  deskripsi  String
+  harga      Int
+  jumlah     Int      @default(0)
+  gambar     String
+  ukuran     String
+  warna      String
+  kategori   Kategori @relation(fields: [kategoriId], references: [id])
+  kategoriId String
+  dibuatPada DateTime @default(now())
+  diperbarui DateTime @updatedAt
+
+  ItemPesanan ItemPesanan[]
+}
+
+model Pesanan {
+  id               String           @id
+  itemPesanan      ItemPesanan[]
+  namaDepan        String
+  namaBelakang     String
+  email            String
+  alamat           String
+  kota             String
+  provinsi         String
+  kodePos          String
+  telepon          String
+  catatan          String?
+  totalHarga       Int
+  statusPembayaran StatusPembayaran @default(PENDING)
+  tokenSnap        String?          @unique
+  dibuatPada       DateTime         @default(now())
+  diperbarui       DateTime         @updatedAt
+
+  pengguna   Pengguna @relation(fields: [penggunaId], references: [id])
+  penggunaId String
+}
+
+model ItemPesanan {
+  id        String  @id @default(cuid())
+  pesanan   Pesanan @relation(fields: [pesananId], references: [id])
+  pesananId String
+  produk    Produk  @relation(fields: [produkId], references: [id])
+  produkId  String
+  jumlah    Int
+  harga     Int
+}
+
+enum StatusPembayaran {
+  PENDING
+  PAID
+  FAILED
+}
