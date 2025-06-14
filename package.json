@@ -3,9 +3,9 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon ./src/index.ts",
-    "postinstall": "prisma generate",
-    "start": "node dist/index.js"
+    "dev": "bun --watch run ./src/index.ts",
+    "postinstall": "prisma generate --no-engine",
+    "start": "bun run node dist/index.js"
   },
   "devDependencies": {
     "@types/bun": "^1.2.15",
