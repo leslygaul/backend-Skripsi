@@ -8,11 +8,16 @@ import routes from './routes'
 const app = express()
 const PORT = process.env.PORT
 
-const allowedOrigins = process.env.ORIGINS?.split(',');
+const allowedOrigins = (process.env.ORIGINS).split(',');
+
+const cleanOrigins = allowedOrigins.map(o => o.trim().replace(/\/$/, ''));
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const formattedOrigin = origin?.replace(/\/$/, '');
+    console.log('CORS check for:', formattedOrigin);
+
+    if (!formattedOrigin || cleanOrigins.includes(formattedOrigin)) {
       callback(null, origin);
     } else {
       callback(new Error('Origin not allowed by CORS'));
