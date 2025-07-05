@@ -1,43 +1,42 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import compression from 'compression';
-import routes from './routes';
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import compression from 'compression'
+import routes from './routes'
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+const app = express()
+const PORT = process.env.PORT || 3001
 
-// Ambil ORIGINS dari environment variable
-const allowedOrigins = process.env.ORIGINS 
-  ? process.env.ORIGINS.split(',').map(o => o.trim()) 
-  : ['http://localhost:3000']; // Fallback untuk development
+// Ambil daftar origin dari environment variable ORIGINS (dipisah koma)
+const allowedOrigins = process.env.ORIGINS
+  ? process.env.ORIGINS.split(',').map(origin => origin.trim().replace(/\/$/, ''))
+  : ['http://localhost:3000']
 
-// Middlewares global
+// Middleware CORS dinamis
 app.use(cors({
   origin: (origin, callback) => {
-    // Izinkan request tanpa origin (e.g., mobile apps, Postman)
-    if (!origin) return callback(null, true);
-
-    // Cek apakah origin ada di daftar yang diizinkan
+    if (!origin) return callback(null, true) // untuk Postman, curl, dll
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('🚫 Blocked by CORS:', origin);
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true)
     }
+    console.warn('❌ CORS blocked:', origin)
+    return callback(new Error('Not allowed by CORS'))
   },
-  credentials: true
-}));
-app.use(express.json());
-app.use(cookieParser());
-app.use(compression());
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  credentials: true,
+}))
 
-// Routes
-app.use('/', routes);
+// Middleware global lainnya
+app.use(express.json())
+app.use(cookieParser())
+app.use(compression())
+
+// Routing utama
+app.use('/', routes)
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log('✅ Allowed origins:', allowedOrigins);
-});
+  console.log(`🚀 Server running on port ${PORT}`)
+  console.log('✅ Allowed origins:', allowedOrigins)
+})
